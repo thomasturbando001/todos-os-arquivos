@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Carro na Estrada - Visão do Piloto</title>
+  <style>
+    canvas {
+      display: block;
+      margin: auto;
+      background: #555;
+    }
+    body {
+      background: #222;
+      color: white;
+      font-family: sans-serif;
+      text-align: center;
+    }
+    #gameOverScreen {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.9);
+      padding: 30px;
+      border-radius: 10px;
+      color: white;
+      font-size: 24px;
+      text-align: center;
+    }
+    #gameOverScreen button {
+      margin-top: 20px;
+      padding: 12px 25px;
+      font-size: 20px;
+      border: none;
+      border-radius: 8px;
+      background: #ff4444;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>🚗 Jogo do Carro 🚧</h1>
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
+  <p>Use ← → para mover o carro</p>
+
+  <div id="gameOverScreen">
+    <div id="gameOverText">💥 GAME OVER 💥</div>
+    <div id="finalScoreText"></div>
+    <div id="finalTimeText"></div>
+    <button id="restartBtn">🔄 Recomeçar</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const gameOverScreen = document.getElementById("gameOverScreen");
+    const restartBtn = document.getElementById("restartBtn");
+    const finalScoreText = document.getElementById("finalScoreText");
+    const finalTimeText = document.getElementById("finalTimeText");
+
+    let car;
+    let keys = {};
+    let score;
+    let startTime;
+    let elapsedTime;
+    let gameOver;
+    let roadLines;
+    let enemies;
+    let difficultyMultiplier;
+
+    function init() {
+      car = { x: canvas.width / 2 - 20, y: canvas.height - 100, width: 40, height: 80, speed: 6 };
+      keys = {};
+      score = 0;
+      startTime = Date.now();
+      elapsedTime = 0;
+      gameOver = false;
+      difficultyMultiplier = 1;
+
+      roadLines = [];
+      for (let i = 0; i < 20; i++) roadLines.push({ x: canvas.width / 2 - 5, y: i * 60 });
+
+      enemies = [];
+      gameOverScreen.style.display = "none";
+    }
+
+    function spawnEnemy() {
+      const enemyWidth = 40;
+      const enemyHeight = 60;
+      const lane = Math.floor(Math.random() * 3);
+      const laneWidth = canvas.width / 3;
+      enemies.push({
+        x: lane * laneWidth + (laneWidth - enemyWidth) / 2,
+        y: -enemyHeight,
+        width: enemyWidth,
+        height: enemyHeight,
+        speed: (3 + Math.random() * 2) * difficultyMultiplier
+      });
+    }
+
+    setInterval(() => { if (!gameOver) spawnEnemy(); }, 1500);
+
+    document.addEventListener("keydown", e => { if (e.key === "ArrowLeft" || e.key === "ArrowRight") e.preventDefault(); keys[e.key] = true; });
+    document.addEventListener("keyup", e => keys[e.key] = false);
+
+    function update() {
+      if (gameOver) return;
+
+      const timeElapsed = Math.floor((Date.now() - startTime) / 1000);
+      difficultyMultiplier = 1 + timeElapsed * 0.05;
+
+      if (keys["ArrowLeft"] && car.x > 0) car.x -= car.speed;
+      if (keys["ArrowRight"] && car.x + car.width < canvas.width) car.x += car.speed;
+
+      roadLines.forEach(line => { line.y += 5 * difficultyMultiplier; if (line.y > canvas.height) line.y = -60; });
+      enemies.forEach(enemy => enemy.y += enemy.speed);
+      enemies = enemies.filter(enemy => enemy.y < canvas.height + 100);
+
+      enemies.forEach(enemy => {
+        if (car.x < enemy.x + enemy.width && car.x + car.width > enemy.x && car.y < enemy.y + enemy.height && car.y + car.height > enemy.y) {
+          gameOver = true;
+          elapsedTime = timeElapsed;
+          finalScoreText.textContent = "Pontos: " + score;
+          finalTimeText.textContent = "Tempo: " + elapsedTime + "s";
+          gameOverScreen.style.display = "block";
+        }
+      });
+
+      score = Math.floor((Date.now() - startTime) / 100);
+    }
+
+    function drawCar() {
+      ctx.fillStyle = "red";
+      ctx.fillRect(car.x, car.y, car.width, car.height);
+      ctx.fillStyle = "black";
+      const wheelWidth = car.width / 4;
+      const wheelHeight = car.height / 5;
+      ctx.fillRect(car.x - wheelWidth, car.y + 10, wheelWidth, wheelHeight);
+      ctx.fillRect(car.x + car.width, car.y + 10, wheelWidth, wheelHeight);
+      ctx.fillRect(car.x - wheelWidth, car.y + car.height - wheelHeight - 10, wheelWidth, wheelHeight);
+      ctx.fillRect(car.x + car.width, car.y + car.height - wheelHeight - 10, wheelWidth, wheelHeight);
+    }
+
+    function drawView() {
+      ctx.fillStyle = "#444";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#fff";
+      roadLines.forEach(line => ctx.fillRect(line.x, line.y, 10, 40));
+      ctx.fillStyle = "blue";
+      enemies.forEach(enemy => ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height));
+      drawCar();
+    }
+
+    function drawHUD() {
+      ctx.fillStyle = "white";
+      ctx.font = "20px Arial";
+      ctx.fillText("Pontos: " + score, 10, 30);
+      const timeToShow = gameOver ? elapsedTime : Math.floor((Date.now() - startTime) / 1000);
+      ctx.fillText("Tempo: " + timeToShow + "s", 280, 30);
+    }
+
+    function draw() { ctx.clearRect(0, 0, canvas.width, canvas.height); drawView(); drawHUD(); }
+
+    function loop() { update(); draw(); requestAnimationFrame(loop); }
+
+    restartBtn.addEventListener("click", () => { init(); });
+
+    init();
+    loop();
+  </script>
+</body>
+</html>
