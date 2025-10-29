@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Todos os Arquivos — Projetos e Exercícios</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card: #161b22;
+      --text: #e6edf3;
+      --accent: #58a6ff;
+      --shadow: rgba(0,0,0,0.4);
+    }
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 40px;
+      line-height: 1.6;
+    }
+    h1, h2 {
+      color: var(--accent);
+      text-align: center;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+    a.card {
+      display: block;
+      background: var(--card);
+      border-radius: 12px;
+      padding: 16px;
+      color: var(--text);
+      text-decoration: none;
+      box-shadow: 0 4px 10px var(--shadow);
+      transition: transform .2s, box-shadow .2s;
+    }
+    a.card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 14px var(--shadow);
+    }
+    footer {
+      text-align: center;
+      font-size: 0.9em;
+      margin-top: 40px;
+      color: #8b949e;
+    }
+  </style>
+</head>
+<body>
+  <h1>📁 Todos os Arquivos — Projetos e Exercícios</h1>
+  <p style="text-align:center;">Escolha um projeto para abrir sua página principal.</p>
+
+  <section>
+    <h2>🗂️ Meus Projetos</h2>
+    <div class="grid">
+      <a class="card" href="https://thomasturbando001.github.io/todos-os-arquivos/JOGO%20DE%202D/index.html" target="_blank">
+        <strong>🎮 JOGO DE 2D</strong>
+        <p>Projeto de jogo 2D desenvolvido em HTML/JS.</p>
+      </a>
+
+      <a class="card" href="https://thomasturbando001.github.io/todos-os-arquivos/Project%20Python/Project%20Python/index.html" target="_blank">
+        <strong>🐍 Project Python</strong>
+        <p>Projeto em Python com interface web.</p>
+      </a>
+
+      <a class="card" href="https://thomasturbando001.github.io/todos-os-arquivos/back/index.html" target="_blank">
+        <strong>🧩 back</strong>
+        <p>Scripts e recursos de backend.</p>
+      </a>
+
+      <a class="card" href="https://thomasturbando001.github.io/todos-os-arquivos/jogo%20de%203d/index.html" target="_blank">
+        <strong>🕹️ jogo de 3D</strong>
+        <p>Projeto de jogo 3D rodando direto no navegador.</p>
+      </a>
+
+      <a class="card" href="https://thomasturbando001.github.io/todos-os-arquivos/num%20sei/index.html" target="_blank">
+        <strong>❓ num sei</strong>
+        <p>Arquivos diversos e testes de código.</p>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    <p>Site hospedado em <a href="https://thomasturbando001.github.io/todos-os-arquivos/" style="color:var(--accent)">GitHub Pages</a></p>
+    <p>© 2025 — Feito com 💙 por Thomas</p>
+  </footer>
+</body>
+</html>
