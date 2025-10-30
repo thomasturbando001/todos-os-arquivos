@@ -1,163 +1,189 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Todos os Arquivos — Visualizador Automático</title>
-  <style>
-    :root {
-      --bg: #0d1117;
-      --card: #161b22;
-      --text: #e6edf3;
-      --accent: #58a6ff;
-      --shadow: rgba(0,0,0,0.4);
-    }
-    body {
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: 40px;
-    }
-    h1, h2 {
-      color: var(--accent);
-      text-align: center;
-    }
-    .folder {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 8px var(--shadow);
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    .folder:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 14px var(--shadow);
-    }
-    .files {
-      margin-left: 20px;
-      margin-top: 10px;
-      display: none;
-    }
-    .file {
-      padding: 6px 0;
-      border-bottom: 1px solid #30363d;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .file span {
-      font-family: monospace;
-      font-size: 0.95em;
-    }
-    button {
-      background: var(--accent);
-      border: none;
-      color: white;
-      border-radius: 6px;
-      padding: 4px 10px;
-      cursor: pointer;
-      font-size: 0.85em;
-      transition: background 0.2s;
-      margin-left: 8px;
-    }
-    button:hover {
-      background: #1f6feb;
-    }
-    footer {
-      text-align: center;
-      font-size: 0.9em;
-      margin-top: 40px;
-      color: #8b949e;
-    }
-  </style>
+  <title>📂 Visualizador de Arquivos do GitHub + Expo Snack</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <h1>📁 Todos os Arquivos — Projetos e Exercícios</h1>
-  <p style="text-align:center;">Clique em uma pasta para ver os arquivos e testar ou visualizar o código.</p>
 
-  <div id="folders"></div>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center p-6">
 
-  <footer>
-    <p>Site hospedado em <a href="https://thomasturbando001.github.io/todos-os-arquivos/" style="color:var(--accent)">GitHub Pages</a></p>
-  </footer>
+  <header class="w-full max-w-6xl text-center mb-6">
+    <h1 class="text-3xl font-bold">📂 Arquivos do GitHub + 📱 Expo Snack</h1>
+  </header>
+
+  <main class="w-full max-w-6xl bg-white shadow rounded-xl p-6">
+
+    <!-- Filtro -->
+    <section class="mb-6 flex flex-wrap gap-4 items-center">
+      <span class="font-semibold">Exibir tipos:</span>
+      <label class="flex items-center gap-1"><input type="checkbox" value=".html" onchange="applyFilter()" checked>HTML</label>
+      <label class="flex items-center gap-1"><input type="checkbox" value=".js" onchange="applyFilter()" checked>JS</label>
+      <label class="flex items-center gap-1"><input type="checkbox" value=".css" onchange="applyFilter()" checked>CSS</label>
+      <label class="flex items-center gap-1"><input type="checkbox" value=".py" onchange="applyFilter()" checked>Python</label>
+      <label class="flex items-center gap-1"><input type="checkbox" value=".snack" onchange="applyFilter()" checked>Expo Snack</label>
+    </section>
+
+    <!-- Saída -->
+    <div id="output" class="text-gray-700 w-full max-h-[700px] overflow-auto p-4 border rounded-xl bg-gray-50">
+      <div class="flex justify-center py-10">
+        <span class="text-gray-500">Carregando repositórios...</span>
+      </div>
+    </div>
+  </main>
 
   <script>
-    const repo = "thomasturbando001/todos-os-arquivos";
-    const baseUrl = "https://thomasturbando001.github.io/todos-os-arquivos/";
-    const folders = [
-      "JOGO DE 2D",
-      "Project Python/Project Python",
-      "back",
-      "jogo de 3d",
-      "num sei"
+    const user = "thomasturbando001";
+
+    // Links Expo Snack
+    const expoProjects = [
+      { name: "📖 Cardápio", url: "https://snack.expo.dev/@rabinnella/9f8420" },
+      { name: "👋 Hello", url: "https://snack.expo.dev/@rabinnella/hello" },
+      { name: "🔄 Conversor", url: "https://snack.expo.dev/@rabinnella/conversor" },
+      { name: "💸 Despesas", url: "https://snack.expo.dev/@rabinnella/controle-financeiro" },
+      { name: "📊 Controle de Abastecimento", url: "" },
+      { name: "☕ Cafeteria", url: "https://snack.expo.dev/@rabinnella/cafeteira" },
+      { name: "🐶 PetShop", url: "https://snack.expo.dev/@rabinnella/43f674" },
+      { name: "🎶 Playlist", url: "https://snack.expo.dev/@rabinnella/playlist" },
+      { name: "🚗 Locadora", url: "https://snack.expo.dev/@rabinnella/locadora-de-carros" }
     ];
 
-    const container = document.getElementById("folders");
+    // Renderiza seção fixa Expo Snack
+    function renderExpoSection(output) {
+      const container = document.createElement("div");
+      container.className = "border border-gray-300 rounded-xl p-4 mb-4 bg-yellow-50";
 
-    folders.forEach(folder => {
-      const div = document.createElement("div");
-      div.className = "folder";
-      div.innerHTML = `<strong>📂 ${folder}</strong><div class="files"></div>`;
-      container.appendChild(div);
+      const title = document.createElement("h2");
+      title.className = "font-bold text-lg text-yellow-800 mb-2";
+      title.textContent = "📱 Expo Snack";
 
-      div.addEventListener("click", async () => {
-        const filesDiv = div.querySelector(".files");
-        if (filesDiv.style.display === "block") {
-          filesDiv.style.display = "none";
-          filesDiv.innerHTML = "";
-          return;
-        }
+      const fileList = document.createElement("ul");
+      fileList.className = "ml-4 space-y-1";
 
-        filesDiv.innerHTML = "<em>Carregando...</em>";
-        filesDiv.style.display = "block";
+      expoProjects.forEach(project => {
+        const li = document.createElement("li");
+        li.dataset.type = "file";
+        li.dataset.ext = ".snack"; // extensão própria para filtro
+        li.className = "hover:bg-yellow-100 p-1 rounded-md transition-colors";
 
-        const apiUrl = `https://api.github.com/repos/${repo}/contents/${encodeURIComponent(folder)}`;
-        try {
-          const res = await fetch(apiUrl);
-          const data = await res.json();
-
-          if (!Array.isArray(data)) {
-            filesDiv.innerHTML = "<em>Não foi possível listar os arquivos.</em>";
-            return;
-          }
-
-          filesDiv.innerHTML = "";
-          data.forEach(file => {
-            const row = document.createElement("div");
-            row.className = "file";
-            row.innerHTML = `<span>${file.name}</span>`;
-
-            // Se for HTML, adiciona botão "Abrir/Testar"
-            if (file.name.endsWith(".html")) {
-              const btn = document.createElement("button");
-              btn.textContent = "Abrir/Testar";
-              btn.onclick = () => {
-                const fileUrl = `${baseUrl}${folder}/${file.name}`;
-                window.open(fileUrl, "_blank");
-              };
-              row.appendChild(btn);
-            } else {
-              // Se não for HTML, adiciona botão "Ver Código"
-              const rawBtn = document.createElement("button");
-              rawBtn.textContent = "Ver Código";
-              rawBtn.onclick = () => {
-                const rawUrl = file.download_url; // Link direto via GitHub API
-                window.open(rawUrl, "_blank");
-              };
-              row.appendChild(rawBtn);
-            }
-
-            filesDiv.appendChild(row);
-          });
-        } catch (e) {
-          console.error(e);
-          filesDiv.innerHTML = "<em>Erro ao carregar arquivos.</em>";
-        }
+        li.innerHTML = `
+          📄 <span>${project.name}</span>
+          <a href="${project.url}" target="_blank" class="ml-2 px-2 py-0.5 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded">Abrir</a>
+        `;
+        fileList.appendChild(li);
       });
-    });
+
+      container.appendChild(title);
+      container.appendChild(fileList);
+      output.appendChild(container);
+    }
+
+    // GitHub API
+    async function fetchFromGitHub(url) {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Erro ${res.status}`);
+      return res.json();
+    }
+
+    async function loadRepos() {
+      const output = document.getElementById("output");
+      output.innerHTML = "";
+
+      // Renderiza Expo Snack primeiro
+      renderExpoSection(output);
+
+      try {
+        const repos = await fetchFromGitHub(`https://api.github.com/users/${user}/repos`);
+
+        for (const repo of repos) {
+          const repoElement = document.createElement("div");
+          repoElement.className = "border border-gray-300 rounded-xl p-4 mb-4 bg-white shadow";
+          repoElement.innerHTML = `<h2 class="font-bold text-lg text-blue-700 mb-2">📦 ${repo.name}</h2>`;
+
+          const fileList = document.createElement("ul");
+          fileList.className = "ml-4 space-y-1";
+          repoElement.appendChild(fileList);
+
+          output.appendChild(repoElement);
+          await loadFiles(user, repo.name, "", fileList);
+        }
+        applyFilter();
+      } catch (err) {
+        output.innerHTML += `<p class="text-red-500">${err.message}</p>`;
+      }
+    }
+
+    async function loadFiles(user, repo, path, parentElement) {
+      try {
+        const files = await fetchFromGitHub(`https://api.github.com/repos/${user}/${repo}/contents/${path}`);
+        for (const file of files) {
+          if (file.type === "dir") {
+            const dir = document.createElement("li");
+            dir.dataset.type = "dir";
+            dir.innerHTML = `📂 <span class="font-semibold">${file.name}</span>`;
+            const subList = document.createElement("ul");
+            subList.className = "ml-6 border-l pl-3 space-y-1";
+            dir.appendChild(subList);
+            parentElement.appendChild(dir);
+            await loadFiles(user, repo, file.path, subList);
+          } else {
+            parentElement.appendChild(createFileElement(file, repo));
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function createFileElement(file, repo) {
+      const ext = file.name.split('.').pop().toLowerCase();
+      const li = document.createElement("li");
+      li.dataset.type = "file";
+      li.dataset.ext = "." + ext;
+      li.className = "hover:bg-gray-100 p-1 rounded-md transition-colors";
+
+      let viewButton = "";
+      if (ext === "html") {
+        const githubPagesURL = `https://${user}.github.io/${repo}/${file.path}`;
+        viewButton = `<button onclick="window.open('${githubPagesURL}', '_blank')" class="ml-2 px-2 py-0.5 text-xs bg-green-600 hover:bg-green-700 text-white rounded">Visualizar</button>`;
+      }
+
+      li.innerHTML = `
+        📄 <span>${file.name}</span>
+        <a href="${file.html_url}" target="_blank" class="text-blue-600 hover:underline ml-2">Abrir no GitHub</a>
+        ${viewButton}
+      `;
+      return li;
+    }
+
+    // Filtro
+    function applyFilter() {
+      const selected = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+        .map(c => c.value.toLowerCase());
+
+      document.querySelectorAll("#output li[data-type='file']").forEach(li => {
+        li.style.display = selected.includes(li.dataset.ext) ? "list-item" : "none";
+      });
+
+      document.querySelectorAll("#output li[data-type='dir']").forEach(dir => {
+        const children = dir.querySelectorAll(":scope > ul > li");
+        const hasVisibleChild = Array.from(children).some(c => c.style.display !== "none");
+        dir.style.display = hasVisibleChild ? "list-item" : "none";
+      });
+
+      document.querySelectorAll("#output > div").forEach(repoDiv => {
+        const files = repoDiv.querySelectorAll("li[data-type='file']");
+        const hasVisibleFile = Array.from(files).some(file => file.style.display !== "none");
+        repoDiv.style.display = hasVisibleFile ? "block" : "none";
+      });
+    }
+
+    loadRepos();
   </script>
+
 </body>
 </html>
+
+
+
